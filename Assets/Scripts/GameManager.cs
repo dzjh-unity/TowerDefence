@@ -31,6 +31,8 @@ public class GameManager : MonoBehaviour
     public bool m_debug = true; // 显示路点的debug开关
     public List<PathNode> m_PathNodes; // 路点
 
+    public List<Enemy> m_EnemyList = new List<Enemy>(); // 所有敌人列表
+
     void Awake() {
         Instance = this;
     }
@@ -71,7 +73,7 @@ public class GameManager : MonoBehaviour
                 });
                 // 默认隐藏重新游戏按钮
                 m_tryBtn.gameObject.SetActive(false);
-            } else if (t.name.CompareTo("PlayerBtn") == 0) {
+            } else if (t.name.Contains("PlayerBtn")) {
                 // 给防守单位按照添加按钮事件
                 EventTrigger trigger = t.gameObject.AddComponent<EventTrigger>();
                 trigger.triggers = new List<EventTrigger.Entry>();
@@ -137,8 +139,36 @@ public class GameManager : MonoBehaviour
     }
     
     void OnButCreateDefenderUp(BaseEventData data) {
-        GameObject go = data.selectedObject;
-        // toDo
+        // 创建射线
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hitinfo;
+        // 检测是否与地面相碰撞
+        if (Physics.Raycast(ray, out hitinfo, 1000, m_groundlayer)) {
+            // 如果选中一个可用格子
+            if (TileObject.Instance.getDataFromPosition(hitinfo.point.x, hitinfo.point.z) == (int)Defender.TileStatus.GUARD) {
+                // 获得碰撞点位置
+                Vector3 hitpos = new Vector3(hitinfo.point.x, 0, hitinfo.point.z);
+                // 获得GridObject坐标位置
+                Vector3 gridPos = TileObject.Instance.transform.position;
+                // 获得格子大小
+                float tilesize = TileObject.Instance.tileSize;
+                // 计算出所点击格子的中心位置
+                hitpos.x = gridPos.x + (int)((hitpos.x - gridPos.x)/tilesize) * tilesize + tilesize * 0.5f;
+                hitpos.z = gridPos.z + (int)((hitpos.z - gridPos.z)/tilesize) * tilesize + tilesize * 0.5f;
+                // 获得选择的按钮GameObject，并简单通过按钮名字判断选择了哪个按钮
+                GameObject go = data.selectedObject;
+                if (go.name.Contains("1")) {
+                    if (SetCoin(-15)) {
+                        Defender.Create<Defender>(hitpos, new Vector3(0, 180, 0));
+                    }
+                } else if (go.name.Contains("2")) {
+                    if (SetCoin(-20)) {
+                        Defender.Create<Archer>(hitpos, new Vector3(0, 180, 0));
+                    }
+                }
+            }
+        }
+        m_isSelectedBtn = false;
     }
 
     [ContextMenu("BuildPath")]

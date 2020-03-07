@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [AddComponentMenu("GameScripts/Enemy")]
 
@@ -12,10 +13,23 @@ public class Enemy : MonoBehaviour
     public float m_speed = 2; // 敌人的移动速度
     public System.Action<Enemy> onDeath; // 敌人的死亡事件
 
+    Transform m_lifebarObj; // 敌人的UI生命条GameObject
+    Slider m_lifebar;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        GameManager.Instance.m_EnemyList.Add(this);
+
+        // 读取生命条
+        GameObject prefab = (GameObject)Resources.Load("Prefabs/Canvas3D");
+        // 创建生命条，将当前Transform设为父节点
+        m_lifebarObj = ((GameObject)Instantiate(prefab, Vector3.zero, Camera.main.transform.rotation, this.transform)).transform;
+        m_lifebarObj.localPosition = new Vector3(0, 2.0f, 0); // 将生命条放置到角色头上
+        m_lifebarObj.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+        m_lifebar = m_lifebarObj.GetComponentInChildren<Slider>();
+        // 更新生命条位置和角度
+        StartCoroutine(UpdateLifebar());
     }
 
     // Update is called once per frame
@@ -51,6 +65,27 @@ public class Enemy : MonoBehaviour
     }
 
     public void DestroyMe() {
+        GameManager.Instance.m_EnemyList.Remove(this);
+        onDeath(this); // 执行死亡回调
         Destroy(this.gameObject); // 注意在实际项目中一般不要直接调用Destroy
+    }
+
+    public void SetDamage(int damage) {
+        m_life -= damage;
+        if (m_life <= 0) {
+            m_life = 0;
+            // 每消灭一个敌人增加一些金币
+            GameManager.Instance.SetCoin(5);
+            DestroyMe();
+        }
+    }
+
+    IEnumerator UpdateLifebar() {
+        // 更新生命条值
+        m_lifebar.value = (float)m_life / (float)m_maxlife;
+        // 更新角度，如始终面向摄像机
+        m_lifebarObj.transform.eulerAngles = Camera.main.transform.eulerAngles;
+        yield return 0;
+        StartCoroutine(UpdateLifebar());
     }
 }

@@ -119,7 +119,12 @@ ModelImporter:
     13700000: ShouWei_shuangdao
     13700002: ShouWei_shuangdao 1
     13700004: ShouWei_shuangdao 2
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ShouWei_shuangdao
+    second: {fileID: 2100000, guid: 43f4ec04b00c2c04b93ff25e4752d641, type: 2}
   materials:
     importMaterials: 1
     materialName: 0

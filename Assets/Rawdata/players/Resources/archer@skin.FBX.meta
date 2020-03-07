@@ -151,7 +151,12 @@ ModelImporter:
     13700002: dengchanyu_gong
     13700004: dengchanyu_jian
     13700006: dengchanyu_jiantong
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: default
+    second: {fileID: 2100000, guid: f3c4b85752abb35468ab83db74dd105a, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
